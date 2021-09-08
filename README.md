@@ -2,6 +2,8 @@
 
  WIP ESX NPC Dealer Employee
  
+ Not completely sure where I'm going with this.
+ 
 # Preview
 
 https://youtu.be/HHUSPEhlxm0
