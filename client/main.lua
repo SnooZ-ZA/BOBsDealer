@@ -113,7 +113,7 @@ end)
 
 Citizen.CreateThread(function()
 	while true do
-		local sales = math.random(20000, 40000)
+		local sales = math.random(40000, 120000)
 		Citizen.Wait(sales)
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 and DoesEntityExist(dealer) and not IsEntityDead(dealer) then
