@@ -1,8 +1,6 @@
-# WIP BOBsDealer
+# BOBsDealer
 
- WIP ESX NPC Dealer Employee
- 
- Not completely sure where I'm going with this.
+ WIP ESX NPC Dealer Employee with Police Alerts
  
 # Preview
 

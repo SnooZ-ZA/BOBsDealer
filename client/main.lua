@@ -47,8 +47,8 @@ function AddDealer()
 	while not HasAnimDictLoaded("amb@world_human_drug_dealer_hard@male@base") do
 		Wait(1)
 	end
-		pedNpc = CreatePed(5, modelped, dealerinfo.x, dealerinfo.y, dealerinfo.z, heading, true, false)
-			dealer = pedNpc
+		dealer = CreatePed(5, modelped, dealerinfo.x, dealerinfo.y, dealerinfo.z, heading, true, false)
+			--dealer = pedNpc
 		TaskTurnPedToFaceEntity(dealer, ped, 2000)
 			Citizen.Wait(1000)	
 		TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
@@ -80,22 +80,24 @@ function AddByer()
 	while not HasAnimDictLoaded("mp_common") do
 		Wait(1)
 	end
-		pedNpc = CreatePed(5, modelped, buyerinfo.x, buyerinfo.y, buyerinfo.z - 0.8, heading - 180, true, false)
-			buyer = pedNpc
+		buyer = CreatePed(5, modelped, buyerinfo.x, buyerinfo.y, buyerinfo.z - 0.8, heading - 180, true, false)
+			--buyer = pedNpc
 		TaskTurnPedToFaceEntity(buyer, ped, 2000)
 			Citizen.Wait(1000)	
 		TaskPlayAnim(buyer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 		TaskPlayAnim(dealer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 		RemoveAnimDict('mp_common')
-		Citizen.Wait(1000)
 		ClearPedTasks(buyer)
+		Citizen.Wait(1000)
 		SetPedAsNoLongerNeeded(buyer)
 		RequestAnimDict("amb@world_human_drug_dealer_hard@male@base")
 		while not HasAnimDictLoaded("amb@world_human_drug_dealer_hard@male@base") do
 		Wait(1)
 		end
 		TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
-		RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')	
+		RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')
+		Citizen.Wait(3000)
+		DeleteEntity(buyer)
 end
 
 Citizen.CreateThread(function()
@@ -111,35 +113,62 @@ end)
 
 Citizen.CreateThread(function()
 	while true do
-		local sales = math.random(45000, 120000)
+		local sales = math.random(20000, 40000)
 		Citizen.Wait(sales)
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 and DoesEntityExist(dealer) and not IsEntityDead(dealer) then
 				AddByer()
 				TriggerServerEvent("esx_dealer:sellDrugs")
-			elseif timeleft == 0 and DoesEntityExist(dealer) or IsEntityDead(dealer) then
+				callCops = math.random(1, 9)
+				if callCops == 5 then	
+				TriggerServerEvent('esx_dealer:callCops')
+				end
+			elseif timeleft == 0 and DoesEntityExist(dealer) then
 				FreezeEntityPosition(dealer,false)	
 				SetPedAsNoLongerNeeded(dealer)
 				ClearPedTasks(dealer)
 				ESX.ShowNotification('~y~Your Dealer Quit!')
 				Citizen.Wait(15000)
-				DeleteEntity(dealer)
+				DeleteEntity(dealer)				
+			elseif	DoesEntityExist(dealer) and IsEntityDead(dealer) then
+				ESX.ShowNotification('~r~Your Dealer Died!')
+				DeleteEntity(dealer)			
 			end				
 
 		end)	
 	end
 end)
 
+RegisterNetEvent('esx_dealer:callCops')
+AddEventHandler('esx_dealer:callCops', function(suspect)
+	dealerPos = GetEntityCoords(dealer)
+	ShowAdvancedNotification('CHAR_MP_FAM_BOSS', 'Drug Sales', '~y~Dealer selling drugs.~s~', '~r~Alert! Shoot to kill!')
+    local dealerLoc = AddBlipForCoord(dealerPos.x, dealerPos.y, dealerPos.z)
+    SetBlipSprite(dealerLoc , 161)
+    SetBlipScale(dealerLoc , 1.0)
+    SetBlipColour(dealerLoc, 5)
+    PulseBlip(dealerLoc)
+	Wait(20*1000)
+    RemoveBlip(dealerLoc)
+end)
+
+function ShowAdvancedNotification(icon, sender, title, text)
+    SetNotificationTextEntry("STRING")
+    AddTextComponentString(text)
+    SetNotificationMessage(icon, icon, true, 4, sender, title, text)
+    DrawNotification(false, true)
+end
+
 
 --[[function CreateMissionBlip(dealerinfo)
 	local dealerblip = AddBlipForCoord(dealerinfo.x, dealerinfo.y, dealerinfo.z)
-	SetBlipSprite(blip, 310)
-	SetBlipColour(blip, 1)
+	SetBlipSprite(dealerblip, 310)
+	SetBlipColour(dealerblip, 1)
 	AddTextEntry('MYDEALER', "Drug Dealer")
 	BeginTextCommandSetBlipName('MYDEALER')
 	AddTextComponentSubstringPlayerName(name)
-	EndTextCommandSetBlipName(blip)
-	SetBlipScale(blip, 0.9) -- set scale
-	SetBlipAsShortRange(blip, true)
-	return blip
+	EndTextCommandSetBlipName(dealerblip)
+	SetBlipScale(dealerblip, 0.9) -- set scale
+	SetBlipAsShortRange(dealerblip, true)
+	return dealerblip
 end]]--

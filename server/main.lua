@@ -14,9 +14,11 @@ RegisterCommand("dealer", function(source, args, rawCommand)
 	local coke = xPlayer.getInventoryItem('coke').count
 	local meth = xPlayer.getInventoryItem('meth').count
 	if weed > 0 or coke > 0  or meth > 0 then
+		local totalcount = weed + coke + meth
+		TriggerClientEvent("esx:showNotification", source, "You have ~r~" .. totalcount .. "~s~ drugs.")
 		local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
 		if not result then
-			MySQL.Sync.execute("INSERT INTO dealers (`identifier`, `timeleft`) VALUES (@identifier, @timeleft)",{['@identifier'] = identifier, ['timeleft'] = Config.dealerTime})
+			MySQL.Sync.execute("INSERT INTO dealers (`identifier`, `timeleft`) VALUES (@identifier, @timeleft)",{['@identifier'] = identifier, ['@timeleft'] = Config.dealerTime})
 		end
 		local timeleft = MySQL.Sync.fetchAll("SELECT timeleft FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
 		data = timeleft[1].timeleft
@@ -24,7 +26,7 @@ RegisterCommand("dealer", function(source, args, rawCommand)
 			TriggerClientEvent('esx_dealer:spawnDealer', source)
 			MySQL.Sync.execute("UPDATE dealers SET timeleft=@timeleft WHERE identifier=@identifier", {['@identifier'] = identifier, ['@timeleft'] = Config.dealerTime}) 
 		else
-			TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes.")
+			TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes before employing a dealer.")
 		end
 	else
 	TriggerClientEvent("esx:showNotification", source, "You need ~b~Drugs~s~ to employ a ~y~Dealer")
@@ -112,5 +114,16 @@ AddEventHandler("esx_dealer:sellDrugs", function()
 	TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Cocaine~s~ for ~r~$" .. price)
 	elseif drugType=='meth' then
 	TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Meth~s~ for ~r~$" .. price)
+	end
+end)
+
+RegisterServerEvent('esx_dealer:callCops')
+AddEventHandler('esx_dealer:callCops', function()
+	local xPlayers = ESX.GetPlayers()
+	for i=1, #xPlayers, 1 do
+		local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
+		if xPlayer.job.name == 'police' then
+			TriggerClientEvent('esx_dealer:callCops', xPlayers[i], suspect)
+		end
 	end
 end)
