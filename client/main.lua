@@ -56,7 +56,7 @@ function AddDealer()
 		FreezeEntityPosition(dealer,true)	
 end
 
-Citizen.CreateThread(function() -- Jobs
+Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(1)
 		local ped= PlayerPedId()
