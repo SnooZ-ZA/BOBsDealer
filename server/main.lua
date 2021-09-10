@@ -2,7 +2,7 @@ ESX = nil
 
 Config = {}
 
-Config.dealerTime = 3 --time a dealer stand and sell
+Config.dealerTime = 20 --time a dealer stand and sell
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
