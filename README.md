@@ -2,6 +2,9 @@
 
  WIP ESX NPC Dealer Employee with Police Alerts
  
+ An extention of BOBSDrugs
+https://github.com/SnooZ-ZA/BOBsDrugs
+ 
 # Preview
 
 https://youtu.be/qpxJBkqx5hM
