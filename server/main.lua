@@ -100,9 +100,12 @@ end)
 ESX.RegisterServerCallback('esx_dealer:getTimeLeft', function(source, cb)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local identifier = xPlayer.identifier
-	MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
+	local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
+		if result then
+			MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
 		cb(timeleft)
-	end)
+			end)
+		end	
 end)
 
 RegisterServerEvent("esx_dealer:sellDrugs")
