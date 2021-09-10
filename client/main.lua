@@ -48,23 +48,37 @@ function AddDealer()
 		Wait(1)
 	end
 		dealer = CreatePed(5, modelped, dealerinfo.x, dealerinfo.y, dealerinfo.z, heading, true, false)
-			--dealer = pedNpc
 		TaskTurnPedToFaceEntity(dealer, ped, 2000)
 			Citizen.Wait(1000)	
 		TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 		RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')
 		Citizen.Wait(2000)
-		FreezeEntityPosition(dealer,true)
-		--local dealerblip = CreateMissionBlip(dealerinfo)	
+		FreezeEntityPosition(dealer,true)	
 end
+
+Citizen.CreateThread(function() -- Jobs
+	while true do
+		Citizen.Wait(1)
+		local ped= PlayerPedId()
+		local pedcoords = GetEntityCoords(ped)
+		local pos = GetEntityCoords(dealer)
+		local distance = GetDistanceBetweenCoords(pos.x, pos.y, pos.z, pedcoords.x, pedcoords.y, pedcoords.z, true)
+		if distance < 2 then
+			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~Collect Money~s~')
+			if IsControlJustPressed(1, 51)  then														
+				TriggerServerEvent('esx_dealer:collect')
+			end
+		end		
+	end
+end)
+
 
 function AddByer()
 	local ped= dealer
     local coords = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.2, 0.0)
     local heading = GetEntityHeading(ped)
 	local pedcoords = GetEntityCoords(ped)
-
-		local buyerinfo = {
+	local buyerinfo = {
             x= coords.x,
             y= coords.y,
             z= coords.z,
@@ -81,7 +95,6 @@ function AddByer()
 		Wait(1)
 	end
 		buyer = CreatePed(5, modelped, buyerinfo.x, buyerinfo.y, buyerinfo.z - 0.8, heading - 180, true, false)
-			--buyer = pedNpc
 		TaskTurnPedToFaceEntity(buyer, ped, 2000)
 			Citizen.Wait(1000)	
 		TaskPlayAnim(buyer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
@@ -105,7 +118,10 @@ Citizen.CreateThread(function()
 		Citizen.Wait(60000) -- every 60 seconds
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 then
-				TriggerServerEvent('esx_dealer:updateTime') -- update the database time				
+				TriggerServerEvent('esx_dealer:updateTime') -- update the database time
+			end
+			if timeleft > 0 and timeleft < 4 then
+				ShowAdvancedNotification('CHAR_MP_FAM_BOSS', 'Drug Dealer', '~g~Hey Boss', '~y~Come collect your money!')
 			end
 		end)
 	end
@@ -113,7 +129,7 @@ end)
 
 Citizen.CreateThread(function()
 	while true do
-		local sales = math.random(40000, 120000)
+		local sales = math.random(30000, 60000)
 		Citizen.Wait(sales)
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 and DoesEntityExist(dealer) and not IsEntityDead(dealer) then
@@ -127,11 +143,13 @@ Citizen.CreateThread(function()
 				FreezeEntityPosition(dealer,false)	
 				SetPedAsNoLongerNeeded(dealer)
 				ClearPedTasks(dealer)
-				ESX.ShowNotification('~y~Your Dealer Quit!')
+				ESX.ShowNotification('~y~Your Dealer Quit and ran off with the drugs and money!')
+				TriggerServerEvent("esx_dealer:lost")
 				Citizen.Wait(15000)
 				DeleteEntity(dealer)				
 			elseif	DoesEntityExist(dealer) and IsEntityDead(dealer) then
-				ESX.ShowNotification('~r~Your Dealer Died!')
+				ESX.ShowNotification('~r~Your Dealer Died and lost the drugs and money!')
+				TriggerServerEvent("esx_dealer:lost")
 				DeleteEntity(dealer)			
 			end				
 
@@ -158,17 +176,3 @@ function ShowAdvancedNotification(icon, sender, title, text)
     SetNotificationMessage(icon, icon, true, 4, sender, title, text)
     DrawNotification(false, true)
 end
-
-
---[[function CreateMissionBlip(dealerinfo)
-	local dealerblip = AddBlipForCoord(dealerinfo.x, dealerinfo.y, dealerinfo.z)
-	SetBlipSprite(dealerblip, 310)
-	SetBlipColour(dealerblip, 1)
-	AddTextEntry('MYDEALER', "Drug Dealer")
-	BeginTextCommandSetBlipName('MYDEALER')
-	AddTextComponentSubstringPlayerName(name)
-	EndTextCommandSetBlipName(dealerblip)
-	SetBlipScale(dealerblip, 0.9) -- set scale
-	SetBlipAsShortRange(dealerblip, true)
-	return dealerblip
-end]]--

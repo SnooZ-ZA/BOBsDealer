@@ -6,7 +6,7 @@ description 'Bobs Dealer'
 version '0.1'
 
 client_scripts {
-    --'client/functions.lua',
+    'client/functions.lua',
     'client/main.lua'
 }
 
