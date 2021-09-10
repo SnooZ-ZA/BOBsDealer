@@ -67,6 +67,7 @@ Citizen.CreateThread(function()
 			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~Collect Money~s~')
 			if IsControlJustPressed(1, 51)  then														
 				TriggerServerEvent('esx_dealer:collect')
+				TriggerEvent('esx_dealer:GiveBag')	
 			end
 		end		
 	end
@@ -155,6 +156,19 @@ Citizen.CreateThread(function()
 
 		end)	
 	end
+end)
+
+RegisterNetEvent('esx_dealer:GiveBag')
+AddEventHandler('esx_dealer:GiveBag', function(id)
+    ESX.TriggerServerCallback('esx_skin:getPlayerSkin', function(skin, jobSkin)
+        if skin.bags_1 ~= 45 then
+            TriggerEvent('skinchanger:change', "bags_1", 45)
+            TriggerEvent('skinchanger:change', "bags_2", 0)
+            TriggerEvent('skinchanger:getSkin', function(skin)
+            TriggerServerEvent('esx_skin:save', skin)
+            end)
+        end
+    end)
 end)
 
 RegisterNetEvent('esx_dealer:callCops')
