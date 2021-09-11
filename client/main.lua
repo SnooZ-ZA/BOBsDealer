@@ -87,7 +87,7 @@ end)
 
 function AddByer()
 	local ped= dealer
-    local coords = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.0, 0.0)
+    local coords = GetOffsetFromEntityInWorldCoords(ped, 0.0, 0.9, 0.0)
     local heading = GetEntityHeading(ped)
 	local pedcoords = GetEntityCoords(ped)
 	local buyerinfo = {
@@ -164,8 +164,9 @@ Citizen.CreateThread(function()
 		local dealerpos = GetEntityCoords(dealer)
 		local distance = GetDistanceBetweenCoords(buyerpos.x, buyerpos.y, buyerpos.z, dealerpos.x, dealerpos.y, dealerpos.z, true)		
 		if distance < 1.5 and DoesEntityExist(dealer) then
+			Citizen.Wait(1500)
 			TaskTurnPedToFaceEntity(buyer, dealer, 2000)
-			Citizen.Wait(1000)	
+			Citizen.Wait(1500)	
 				TaskPlayAnim(buyer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 				TaskPlayAnim(dealer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 				RemoveAnimDict('mp_common')
@@ -189,13 +190,21 @@ end)
 RegisterNetEvent('esx_dealer:GiveBag')
 AddEventHandler('esx_dealer:GiveBag', function(id)
     ESX.TriggerServerCallback('esx_skin:getPlayerSkin', function(skin, jobSkin)
-        if skin.bags_1 ~= 45 then
+		RequestAnimDict('mp_action')
+			while not HasAnimDictLoaded('mp_action') do
+			Citizen.Wait(50)
+			end
+			TaskPlayAnim(PlayerPedId(), 'mp_action', 'thanks_male_06', 8.0, 8.0, -1, 50, 0, false, false, false)
+			RemoveAnimDict('mp_action')			
+        if skin.bags_1 ~= 45 then			
             TriggerEvent('skinchanger:change', "bags_1", 45)
             TriggerEvent('skinchanger:change', "bags_2", 0)
             TriggerEvent('skinchanger:getSkin', function(skin)
             TriggerServerEvent('esx_skin:save', skin)
             end)
         end
+			Citizen.Wait(2000)
+			ClearPedTasks(PlayerPedId())
     end)
 end)
 
