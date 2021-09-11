@@ -47,7 +47,7 @@ RegisterCommand("dealer", function(source, args, rawCommand)
 			xPlayer.removeInventoryItem("coke", coke)
 			end
 		else
-			TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes before employing a dealer.")
+			TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes before employing another dealer.")
 		end
 	else
 	TriggerClientEvent("esx:showNotification", source, "You need ~b~Drugs~s~ to employ a ~y~Dealer")
@@ -100,12 +100,9 @@ end)
 ESX.RegisterServerCallback('esx_dealer:getTimeLeft', function(source, cb)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local identifier = xPlayer.identifier
-	local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
-		if result then
-			MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
+	MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
 		cb(timeleft)
-			end)
-		end	
+	end)
 end)
 
 RegisterServerEvent("esx_dealer:sellDrugs")
@@ -181,6 +178,10 @@ AddEventHandler("esx_dealer:sellDrugs", function()
 	end)
 	end)
 end)
+
+RegisterCommand("bag", function(source, args, rawCommand)
+     TriggerClientEvent('esx_dealer:DropBag', source)
+end, false)
 
 RegisterServerEvent('esx_dealer:callCops')
 AddEventHandler('esx_dealer:callCops', function()

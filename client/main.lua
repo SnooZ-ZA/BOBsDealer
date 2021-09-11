@@ -53,21 +53,32 @@ function AddDealer()
 		TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
 		RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')
 		Citizen.Wait(2000)
-		FreezeEntityPosition(dealer,true)	
+		FreezeEntityPosition(dealer,true)
+		attachModel3 = GetHashKey('p_ld_heist_bag_s')
+		boneNumber3 = 24818
+		local bone3 = GetPedBoneIndex(dealer, boneNumber3)
+		RequestModel(attachModel3)
+			while not HasModelLoaded(attachModel3) do
+			Citizen.Wait(100)
+			end
+		attachedProp3 = CreateObject(attachModel3, 0.0, 0.0, 0.0, 90.0, 90.0, 25.0)
+		AttachEntityToEntity(attachedProp3, dealer, bone3, -0.06, -0.08, -0.01, 0.0, 270.0, 180.0, 1, 1, 0, 0, 2, 1)
+		SetEntityAsMissionEntity(object, true, false)
+		SetEntityCollision(attachedProp3, false, true)
 end
 
 Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(1)
-		local ped= PlayerPedId()
-		local pedcoords = GetEntityCoords(ped)
+		local player = PlayerPedId()
+		local playercoords = GetEntityCoords(player)
 		local pos = GetEntityCoords(dealer)
-		local distance = GetDistanceBetweenCoords(pos.x, pos.y, pos.z, pedcoords.x, pedcoords.y, pedcoords.z, true)
+		local distance = GetDistanceBetweenCoords(pos.x, pos.y, pos.z, playercoords.x, playercoords.y, playercoords.z, true)
 		if distance < 2 then
-			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~Collect Money~s~')
-			if IsControlJustPressed(1, 51)  then														
+			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~ Collect Money~s~')
+			if IsControlJustPressed(1, 51)  then
 				TriggerServerEvent('esx_dealer:collect')
-				TriggerEvent('esx_dealer:GiveBag')	
+				TriggerEvent('esx_dealer:GiveBag')
 			end
 		end		
 	end
@@ -76,7 +87,7 @@ end)
 
 function AddByer()
 	local ped= dealer
-    local coords = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.2, 0.0)
+    local coords = GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.0, 0.0)
     local heading = GetEntityHeading(ped)
 	local pedcoords = GetEntityCoords(ped)
 	local buyerinfo = {
@@ -86,7 +97,7 @@ function AddByer()
             h= heading,
             propid=0,
             }
-	local modelped = GetHashKey('a_m_y_epsilon_01')
+	local modelped = GetHashKey('a_m_y_eastsa_02')
 	RequestModel(modelped)
 	while not HasModelLoaded(modelped) do
 		Citizen.Wait(100)
@@ -95,23 +106,9 @@ function AddByer()
 	while not HasAnimDictLoaded("mp_common") do
 		Wait(1)
 	end
-		buyer = CreatePed(5, modelped, buyerinfo.x, buyerinfo.y, buyerinfo.z - 0.8, heading - 180, true, false)
-		TaskTurnPedToFaceEntity(buyer, ped, 2000)
-			Citizen.Wait(1000)	
-		TaskPlayAnim(buyer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
-		TaskPlayAnim(dealer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
-		RemoveAnimDict('mp_common')
-		ClearPedTasks(buyer)
-		Citizen.Wait(1000)
-		SetPedAsNoLongerNeeded(buyer)
-		RequestAnimDict("amb@world_human_drug_dealer_hard@male@base")
-		while not HasAnimDictLoaded("amb@world_human_drug_dealer_hard@male@base") do
-		Wait(1)
-		end
-		TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
-		RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')
-		Citizen.Wait(3000)
-		DeleteEntity(buyer)
+		local retval, buyercoords = GetClosestVehicleNode(coords.x, coords.y , coords.z, 1)
+		buyer = CreatePed(5, modelped, buyercoords.x, buyercoords.y, buyercoords.z, 0.0, true, false)
+		TaskGoToCoordAnyMeans(buyer, buyerinfo.x, buyerinfo.y, buyerinfo.z, 1.0, 0, 0, 786603, 1.0)		
 end
 
 Citizen.CreateThread(function()
@@ -121,7 +118,7 @@ Citizen.CreateThread(function()
 			if timeleft ~= 0 then
 				TriggerServerEvent('esx_dealer:updateTime') -- update the database time
 			end
-			if timeleft > 0 and timeleft < 4 then
+			if timeleft > 0 and timeleft < 4 and DoesEntityExist(dealer) then
 				ShowAdvancedNotification('CHAR_MP_FAM_BOSS', 'Drug Dealer', '~g~Hey Boss', '~y~Come collect your money!')
 			end
 		end)
@@ -135,7 +132,7 @@ Citizen.CreateThread(function()
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 and DoesEntityExist(dealer) and not IsEntityDead(dealer) then
 				AddByer()
-				TriggerServerEvent("esx_dealer:sellDrugs")
+				--TriggerServerEvent("esx_dealer:sellDrugs")
 				callCops = math.random(1, 9)
 				if callCops == 5 then	
 				TriggerServerEvent('esx_dealer:callCops')
@@ -147,16 +144,47 @@ Citizen.CreateThread(function()
 				ESX.ShowNotification('~y~Your Dealer Quit and ran off with the drugs and money!')
 				TriggerServerEvent("esx_dealer:lost")
 				Citizen.Wait(15000)
-				DeleteEntity(dealer)				
+				DeleteEntity(dealer)
+				DeleteEntity(attachedProp3)
 			elseif	DoesEntityExist(dealer) and IsEntityDead(dealer) then
 				ESX.ShowNotification('~r~Your Dealer Died and lost the drugs and money!')
 				TriggerServerEvent("esx_dealer:lost")
-				DeleteEntity(dealer)			
+				DeleteEntity(dealer)
+				DeleteEntity(attachedProp3)
 			end				
 
 		end)	
 	end
 end)
+
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(0)
+		local buyerpos = GetEntityCoords(buyer)
+		local dealerpos = GetEntityCoords(dealer)
+		local distance = GetDistanceBetweenCoords(buyerpos.x, buyerpos.y, buyerpos.z, dealerpos.x, dealerpos.y, dealerpos.z, true)		
+		if distance < 1.5 and DoesEntityExist(dealer) then
+			TaskTurnPedToFaceEntity(buyer, dealer, 2000)
+			Citizen.Wait(1000)	
+				TaskPlayAnim(buyer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
+				TaskPlayAnim(dealer,"mp_common","givetake2_a", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
+				RemoveAnimDict('mp_common')
+				ClearPedTasks(buyer)
+				SetPedAsNoLongerNeeded(buyer)
+				Citizen.Wait(1000)		
+				RequestAnimDict("amb@world_human_drug_dealer_hard@male@base")
+				while not HasAnimDictLoaded("amb@world_human_drug_dealer_hard@male@base") do
+				Wait(1)
+				end
+				TaskPlayAnim(dealer,"amb@world_human_drug_dealer_hard@male@base","base", 8.0, 0.0, -1, 1, 0, 0, 0, 0)
+				RemoveAnimDict('amb@world_human_drug_dealer_hard@male@base')
+				Citizen.Wait(3000)
+				DeleteEntity(buyer)
+				TriggerServerEvent("esx_dealer:sellDrugs")
+		end
+	end	
+end)	
+		
 
 RegisterNetEvent('esx_dealer:GiveBag')
 AddEventHandler('esx_dealer:GiveBag', function(id)
@@ -169,6 +197,15 @@ AddEventHandler('esx_dealer:GiveBag', function(id)
             end)
         end
     end)
+end)
+
+RegisterNetEvent('esx_dealer:DropBag')
+AddEventHandler('esx_dealer:DropBag', function(id)
+       TriggerEvent('skinchanger:change', "bags_1", 0)
+       TriggerEvent('skinchanger:change', "bags_2", 0)
+       TriggerEvent('skinchanger:getSkin', function(skin)
+       TriggerServerEvent('esx_skin:save', skin)
+	end)
 end)
 
 RegisterNetEvent('esx_dealer:callCops')

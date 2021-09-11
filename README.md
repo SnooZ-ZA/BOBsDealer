@@ -2,19 +2,16 @@
 
  WIP ESX NPC Dealer Employee with Police Alerts
  
- An extention of BOBSDrugs
-https://github.com/SnooZ-ZA/BOBsDrugs
- 
 # Preview
 
-https://youtu.be/qpxJBkqx5hM
+https://youtu.be/HHUSPEhlxm0
 
 # Install Instructions:
 Extract files
 
 Add BOBsDealer folder to server resources
 
-Import dealer.sql to database
+Import dealers.sql to database
 
 Add to server.cfg
 
