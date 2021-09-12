@@ -1,9 +1,5 @@
 ESX = nil
 
-Config = {}
-
-Config.dealerTime = 20 --time a dealer stand and sell
-
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 RegisterCommand("dealer", function(source, args, rawCommand)

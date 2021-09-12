@@ -1,5 +1,4 @@
 ESX        = nil
-Config              = {}
 
 Citizen.CreateThread(function()
     while ESX == nil do
@@ -127,14 +126,14 @@ end)
 
 Citizen.CreateThread(function()
 	while true do
-		local sales = math.random(30000, 60000)
+		local sales = math.random(45000, 90000)
 		Citizen.Wait(sales)
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 and DoesEntityExist(dealer) and not IsEntityDead(dealer) then
 				AddByer()
 				--TriggerServerEvent("esx_dealer:sellDrugs")
-				callCops = math.random(1, 9)
-				if callCops == 5 then	
+				callCops = math.random(1, 100)
+				if callCops <= Config.callCops then	
 				TriggerServerEvent('esx_dealer:callCops')
 				end
 			elseif timeleft == 0 and DoesEntityExist(dealer) then
