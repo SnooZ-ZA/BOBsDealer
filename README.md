@@ -22,4 +22,5 @@ ensure BOBsDealer
 you need mysql-async
 
 /dealer  -- spawn your dealer
+
 /bag -- remove bag
