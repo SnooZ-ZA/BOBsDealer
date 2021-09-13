@@ -1,10 +1,18 @@
-# BOBsDealer
+# BOBsDealer WIP - Three Part Drug System 3/3
 
- WIP ESX NPC Dealer Employee with Police Alerts
+ WIP ESX NPC Dealer Employee with Police Alerts -  Part 3/3
  
 # Preview
 
 https://youtu.be/qjcWR0kpvlQ
+
+# Part 1
+
+https://github.com/SnooZ-ZA/BOBsDrugs
+
+# Part 2
+
+https://github.com/SnooZ-ZA/BOBsDrugsLabs
 
 # Install Instructions:
 Extract files
