@@ -40,7 +40,7 @@ function AddDealer()
 	local modelped = GetHashKey('s_m_y_dealer_01')
 	RequestModel(modelped)
 	while not HasModelLoaded(modelped) do
-		Citizen.Wait(100)
+		Wait(100)
 	end
 	RequestAnimDict("amb@world_human_drug_dealer_hard@male@base")
 	while not HasAnimDictLoaded("amb@world_human_drug_dealer_hard@male@base") do
@@ -58,7 +58,7 @@ function AddDealer()
 		local bone3 = GetPedBoneIndex(dealer, boneNumber3)
 		RequestModel(attachModel3)
 			while not HasModelLoaded(attachModel3) do
-			Citizen.Wait(100)
+			Wait(100)
 			end
 		attachedProp3 = CreateObject(attachModel3, 0.0, 0.0, 0.0, 90.0, 90.0, 25.0)
 		AttachEntityToEntity(attachedProp3, dealer, bone3, -0.06, -0.08, -0.01, 0.0, 270.0, 180.0, 1, 1, 0, 0, 2, 1)
@@ -99,7 +99,7 @@ function AddByer()
 	local modelped = GetHashKey('a_m_y_eastsa_02')
 	RequestModel(modelped)
 	while not HasModelLoaded(modelped) do
-		Citizen.Wait(100)
+		Wait(100)
 	end
 	RequestAnimDict("mp_common")
 	while not HasAnimDictLoaded("mp_common") do
@@ -112,7 +112,7 @@ end
 
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(60000) -- every 60 seconds
+	Citizen.Wait(60000) -- every 60 seconds
 		ESX.TriggerServerCallback('esx_dealer:getTimeLeft', function(timeleft)
 			if timeleft ~= 0 then
 				TriggerServerEvent('esx_dealer:updateTime') -- update the database time

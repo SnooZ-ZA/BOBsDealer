@@ -2,6 +2,14 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+AddEventHandler( "playerConnecting", function(name)
+	local identifier = GetPlayerIdentifiers(source)[2]
+	local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
+	if not result then
+		MySQL.Sync.execute("INSERT INTO dealers (`identifier`, `timeleft`, `weed`, `meth`, `coke`, `money`) VALUES (@identifier, @timeleft, @weed, @meth, @coke, @money)",{['@identifier'] = identifier, ['@timeleft'] = 0, ['@weed'] = 0, ['@meth'] = 0, ['@coke'] = 0, ['@money'] = 0})
+    end
+end)
+
 RegisterCommand("dealer", function(source, args, rawCommand)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local identifier = xPlayer.identifier
@@ -50,8 +58,6 @@ RegisterCommand("dealer", function(source, args, rawCommand)
 	end
 end, false)
 
-
-
 RegisterServerEvent('esx_dealer:updateTime')
 AddEventHandler('esx_dealer:updateTime', function()
 	local xPlayer = ESX.GetPlayerFromId(source)
@@ -95,10 +101,17 @@ end)
 
 ESX.RegisterServerCallback('esx_dealer:getTimeLeft', function(source, cb)
 	local xPlayer = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
-	MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
-		cb(timeleft)
-	end)
+	local identifier = xPlayer.identifier	
+	local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
+	if not result then
+		MySQL.Sync.execute("INSERT INTO dealers (`identifier`, `timeleft`, `weed`, `meth`, `coke`, `money`) VALUES (@identifier, @timeleft, @weed, @meth, @coke, @money)",{['@identifier'] = identifier, ['@timeleft'] = 0, ['@weed'] = 0, ['@meth'] = 0, ['@coke'] = 0, ['@money'] = 0})			
+	else
+		local xPlayer = ESX.GetPlayerFromId(source)
+		local identifier = xPlayer.identifier
+		MySQL.Async.fetchScalar('SELECT timeleft FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(timeleft)
+			cb(timeleft)
+		end)
+	end	
 end)
 
 RegisterServerEvent("esx_dealer:sellDrugs")
@@ -156,20 +169,15 @@ AddEventHandler("esx_dealer:sellDrugs", function()
 		newmeth = drugs[1].meth - drugamount
 	MySQL.Async.execute("UPDATE dealers SET meth=@meth WHERE identifier=@identifier", {['@identifier'] = identifier, ['@meth'] = newmeth})		
 	end	
-	--[[if drugType ~= nil then
-		xPlayer.removeInventoryItem(drugType, drugamount)
-	end]]--
 	local money = MySQL.Async.fetchAll('SELECT money FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(money)
 	newmoney = money[1].money + price
-	MySQL.Async.execute("UPDATE dealers SET money=@money WHERE identifier=@identifier", {['@identifier'] = identifier, ['@money'] = newmoney})
-	--xPlayer.addAccountMoney('black_money', price)
-	 --xPlayer.addMoney(price)
+		MySQL.Async.execute("UPDATE dealers SET money=@money WHERE identifier=@identifier", {['@identifier'] = identifier, ['@money'] = newmoney})
 	if drugType=='weed' then
-	TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold ~b~"..drugamount.."x~s~ ~y~Weed~s~ for ~r~$" .. price)
+		TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold ~b~"..drugamount.."x~s~ ~y~Weed~s~ for ~r~$" .. price)
 	elseif drugType=='coke' then
-	TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Cocaine~s~ for ~r~$" .. price)
+		TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Cocaine~s~ for ~r~$" .. price)
 	elseif drugType=='meth' then
-	TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Meth~s~ for ~r~$" .. price)
+		TriggerClientEvent('esx:showNotification', _source, "Your Dealer sold~b~"..drugamount.."x~s~ ~y~Meth~s~ for ~r~$" .. price)
 	end
 	end)
 	end)
