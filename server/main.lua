@@ -2,8 +2,15 @@ ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-AddEventHandler( "playerConnecting", function(name)
-	local identifier = GetPlayerIdentifiers(source)[2]
+AddEventHandler( "playerConnecting", function(identifier)
+	local identifier
+   for k, v in ipairs(GetPlayerIdentifiers(source)) do
+      if string.match(v, "license:") then
+         identifier = v
+         break
+      end
+   end
+   print(identifier)
 	local result = MySQL.Sync.fetchScalar("SELECT * FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
 	if not result then
 		MySQL.Sync.execute("INSERT INTO dealers (`identifier`, `timeleft`, `weed`, `meth`, `coke`, `money`) VALUES (@identifier, @timeleft, @weed, @meth, @coke, @money)",{['@identifier'] = identifier, ['@timeleft'] = 0, ['@weed'] = 0, ['@meth'] = 0, ['@coke'] = 0, ['@money'] = 0})
