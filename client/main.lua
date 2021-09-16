@@ -73,11 +73,21 @@ Citizen.CreateThread(function()
 		local playercoords = GetEntityCoords(player)
 		local pos = GetEntityCoords(dealer)
 		local distance = GetDistanceBetweenCoords(pos.x, pos.y, pos.z, playercoords.x, playercoords.y, playercoords.z, true)
-		if distance < 2 then
-			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~ Collect Money~s~')
+		if distance < 2 and DoesEntityExist(dealer) then
+			drawText3D(pos.x, pos.y, pos.z + 1.0, '[~g~E~s~]~b~ Collect Money~s~<br>[~g~H~s~]~b~ Dismiss Dealer~s~')
 			if IsControlJustPressed(1, 51)  then
 				TriggerServerEvent('esx_dealer:collect')
 				TriggerEvent('esx_dealer:GiveBag')
+			elseif IsControlJustPressed(1, 74)  then
+				TriggerServerEvent('esx_dealer:collect')
+				TriggerEvent('esx_dealer:GiveBag')
+				DeleteEntity(attachedProp3)
+				TriggerServerEvent('esx_dealer:Dismiss')
+				FreezeEntityPosition(dealer,false)	
+				SetPedAsNoLongerNeeded(dealer)
+				ESX.ShowNotification('~g~You dismissed your dealer!')
+				Citizen.Wait(10000)				
+				DeleteEntity(dealer)								
 			end
 		end		
 	end

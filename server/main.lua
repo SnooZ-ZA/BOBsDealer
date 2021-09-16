@@ -39,27 +39,27 @@ RegisterCommand("dealer", function(source, args, rawCommand)
 			end
 			if coke > 0 then
 			xPlayer.removeInventoryItem("coke", coke)
-			end
-			
-		end
-		local timeleft = MySQL.Sync.fetchAll("SELECT timeleft FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
-		data = timeleft[1].timeleft
-		if data == 0 then
-			TriggerClientEvent("esx:showNotification", source, "You gave your dealer ~r~" .. totalcount .. "~s~ drugs.")
-			TriggerClientEvent('esx_dealer:spawnDealer', source)
-			MySQL.Sync.execute("UPDATE dealers SET timeleft=@timeleft, weed=@weed, meth=@meth, coke=@coke WHERE identifier=@identifier", {['@identifier'] = identifier, ['@timeleft'] = Config.dealerTime, ['@weed'] = weed, ['@meth'] = meth, ['@coke'] = coke}) 
-			if weed > 0 then
-			xPlayer.removeInventoryItem("weed", weed)
-			end
-			if meth > 0 then
-			xPlayer.removeInventoryItem("meth", meth)
-			end
-			if coke > 0 then
-			xPlayer.removeInventoryItem("coke", coke)
-			end
+			end			
 		else
-			TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes before employing another dealer.")
-		end
+			local timeleft = MySQL.Sync.fetchAll("SELECT timeleft FROM dealers WHERE identifier = @identifier", {['@identifier'] = identifier})
+			data = timeleft[1].timeleft
+			if data == 0 then
+				TriggerClientEvent("esx:showNotification", source, "You gave your dealer ~r~" .. totalcount .. "~s~ drugs.")
+				TriggerClientEvent('esx_dealer:spawnDealer', source)
+				MySQL.Sync.execute("UPDATE dealers SET timeleft=@timeleft, weed=@weed, meth=@meth, coke=@coke WHERE identifier=@identifier", {['@identifier'] = identifier, ['@timeleft'] = Config.dealerTime, ['@weed'] = weed, ['@meth'] = meth, ['@coke'] = coke}) 
+				if weed > 0 then
+				xPlayer.removeInventoryItem("weed", weed)
+				end
+				if meth > 0 then
+				xPlayer.removeInventoryItem("meth", meth)
+				end
+				if coke > 0 then
+				xPlayer.removeInventoryItem("coke", coke)
+				end
+			else
+				TriggerClientEvent("esx:showNotification", source, "Wait ~r~" .. data .. "~s~ minutes before employing another dealer.")
+			end
+		end	
 	else
 	TriggerClientEvent("esx:showNotification", source, "You need ~b~Drugs~s~ to employ a ~y~Dealer")
 	end
@@ -76,6 +76,28 @@ AddEventHandler('esx_dealer:updateTime', function()
 		end
 	end)
 end)
+
+RegisterServerEvent('esx_dealer:Dismiss')
+AddEventHandler('esx_dealer:Dismiss', function()
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local identifier = xPlayer.identifier
+	local drugs = MySQL.Async.fetchAll('SELECT weed, meth, coke FROM dealers WHERE identifier=@identifier',{['@identifier'] = identifier}, function(drugs)
+		if drugs[1].weed > 0 then
+		xPlayer.addInventoryItem("weed", drugs[1].weed)
+		MySQL.Async.execute("UPDATE dealers SET weed=@weed WHERE identifier=@identifier", {['@identifier'] = identifier, ['@weed'] = 0})
+		end
+		if drugs[1].meth > 0 then
+		xPlayer.addInventoryItem("meth", drugs[1].meth)
+		MySQL.Async.execute("UPDATE dealers SET meth=@meth WHERE identifier=@identifier", {['@identifier'] = identifier, ['@meth'] = 0})
+		end
+		if drugs[1].coke > 0 then
+		xPlayer.addInventoryItem("coke", drugs[1].coke)
+		MySQL.Async.execute("UPDATE dealers SET coke=@coke WHERE identifier=@identifier", {['@identifier'] = identifier, ['@coke'] = 0})
+		end
+	MySQL.Async.execute("UPDATE dealers SET timeleft=@timeleft WHERE identifier=@identifier", {['@identifier'] = identifier, ['@timeleft'] = 0})	
+	end)
+end)
+
 
 RegisterServerEvent('esx_dealer:lost')
 AddEventHandler('esx_dealer:lost', function()
