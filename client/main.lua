@@ -86,7 +86,7 @@ Citizen.CreateThread(function()
 				FreezeEntityPosition(dealer,false)	
 				SetPedAsNoLongerNeeded(dealer)
 				ESX.ShowNotification('~g~You dismissed your dealer!')
-				Citizen.Wait(10000)				
+				Citizen.Wait(3000)				
 				DeleteEntity(dealer)								
 			end
 		end		
